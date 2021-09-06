@@ -3,6 +3,9 @@ const auth = "563492ad6f91700001000001f95785d6f92045c1af0364c7f6ffc9c3";
 const gallery = document.querySelector('.gallery');
 const searchInput = document.querySelector('.search-input');
 const submitBtn = document.querySelector('.search-submit');
+const form = document.querySelector('.search-form');
+const more = document.querySelector('.more');
+let page = 1;
 
 let searchValue;
 
@@ -26,27 +29,60 @@ let searchValue;
 
 // }
 
-async function curatedPhotos(){
-    const dataFetch = await fetch(
-        "https://api.pexels.com/v1/curated",
-        {
-        	method: 'GET',
-        	headers: {
-            Accept: "application/json",
-            Authorization: auth
-        }
-    	}
-    );
-		const data = await dataFetch.json();
-		console.log(data);
+searchInput.addEventListener('input', updateInput);
+form.addEventListener('submit', (e)=>{
+	e.preventDefault();
+	searchPhoto(searchValue);
+})
+
+more.addEventListener('click', uploadMorePhoto);
+
+function updateInput(e){
+	searchValue= e.target.value;
+}
+
+async function fetchApi(url){
+	const dataFetch = await fetch(url,{
+		method: 'GET',
+		headers: {
+			Accept: "application/json",
+			Authorization: auth
+		}
+	});
+	const data = await dataFetch.json();
+	return data;
+}
+
+function generatePicture(data){
 		data.photos.forEach(photo => {
-			console.log('photo:',photo);
-			const galleryImg = document.createElement('div');
-			galleryImg.classList.add('gallery-img');
-			galleryImg.innerHTML = `<img src=${photo.src.large}></img>
-			<p>${photo.photographer}</p>`;
-			gallery.appendChild(galleryImg);
-		});
+		const galleryImg = document.createElement('div');
+		galleryImg.classList.add('gallery-img');
+		galleryImg.innerHTML = `
+		<div class="gallery-info">
+			<p class="gallery-info-p">${photo.photographer}</p>
+			<a href=${photo.src.original}>Download</a>
+		</div>
+		<img src=${photo.src.large}></img>`;
+		gallery.appendChild(galleryImg);
+	});
+}
+
+
+
+async function curatedPhotos(){
+    const data = await fetchApi("https://api.pexels.com/v1/curated");
+	generatePicture(data);
+}
+
+async function searchPhoto(query){
+	const data = await fetchApi(`https://api.pexels.com/v1/search?query=${query} + query`);
+	clearGallery();
+	generatePicture(data);
+}
+
+function clearGallery(){
+	gallery.innerHTML = "";
+	searchInput.value = '';
 }
 
 curatedPhotos();
