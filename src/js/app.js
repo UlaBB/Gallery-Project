@@ -74,7 +74,7 @@ function clearGallery(){
 async function uploadMorePhoto(){
   page++;
   if(currentSearch){
-    fetchLink = `https://api.pexels.com/v1/search?query=${currentSearch}+query&per_page=10&page=${page}`;
+    fetchLink = `https://api.pexels.com/v1/search?query=${currentSearch}+query&per_page=15&page=${page}`;
   }else{
     fetchLink= `https://api.pexels.com/v1/curated?per_page=15&page=${page}`;
   }
