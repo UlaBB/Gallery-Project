@@ -6,83 +6,80 @@ const submitBtn = document.querySelector('.search-submit');
 const form = document.querySelector('.search-form');
 const more = document.querySelector('.more');
 let page = 1;
+let fetchLink;
+let currentSearch;
 
 let searchValue;
 
-// curatedPhotos = async () => {
-
-//     const fetchData = await fetch('https://api.pexels.com/v1/curated/?page=1&per_page=16', { 
-//         method: "GET",
-//         headers: {
-//             Accept: 'application/json',
-//             Authorization: auth
-//         },
-//     })
-//         .then(response => response.json())
-//         .then(data => {
-//             const allPhotos = data.photos;
-//             allPhotos.map((item) => {
-//                 const id = item.id;
-//                 console.log(id);
-//             })
-//         })
-
-// }
-
 searchInput.addEventListener('input', updateInput);
+
 form.addEventListener('submit', (e)=>{
-	e.preventDefault();
-	searchPhoto(searchValue);
+  e.preventDefault();
+  currentSearch = searchValue;
+  searchPhoto(searchValue);
 })
 
 more.addEventListener('click', uploadMorePhoto);
 
 function updateInput(e){
-	searchValue= e.target.value;
+  searchValue= e.target.value;
 }
 
 async function fetchApi(url){
-	const dataFetch = await fetch(url,{
-		method: 'GET',
-		headers: {
-			Accept: "application/json",
-			Authorization: auth
-		}
-	});
-	const data = await dataFetch.json();
-	return data;
+  const dataFetch = await fetch(url,{
+    method: 'GET',
+    headers: {
+      Accept: "application/json",
+      Authorization: auth
+    }
+  });
+  const data = await dataFetch.json();
+  return data;
 }
 
 function generatePicture(data){
-		data.photos.forEach(photo => {
-		const galleryImg = document.createElement('div');
-		galleryImg.classList.add('gallery-img');
-		galleryImg.innerHTML = `
-		<div class="gallery-info">
-			<p class="gallery-info-p">${photo.photographer}</p>
-			<a href=${photo.src.original}>Download</a>
-		</div>
-		<img src=${photo.src.large}></img>`;
-		gallery.appendChild(galleryImg);
-	});
+    data.photos.forEach(photo => {
+    const galleryImg = document.createElement('div');
+    galleryImg.classList.add('gallery-img');
+    galleryImg.innerHTML = `
+    <div class="gallery-info">
+      <p class="gallery-info-p">${photo.photographer}</p>
+      <a href=${photo.src.original}>Download</a>
+    </div>
+    <img src=${photo.src.large}></img>`;
+    gallery.appendChild(galleryImg);
+  });
 }
 
 
 
 async function curatedPhotos(){
-    const data = await fetchApi("https://api.pexels.com/v1/curated");
-	generatePicture(data);
+  fetchLink = "https://api.pexels.com/v1/curated?per_page=15&page=1";
+    const data = await fetchApi(fetchLink);
+  generatePicture(data);
 }
 
 async function searchPhoto(query){
-	const data = await fetchApi(`https://api.pexels.com/v1/search?query=${query} + query`);
-	clearGallery();
-	generatePicture(data);
+  clearGallery();
+  fetchLink = `https://api.pexels.com/v1/search?query=${query}+query&per_page=15&page=1`;
+  const data = await fetchApi(fetchLink);
+  generatePicture(data);
 }
 
 function clearGallery(){
-	gallery.innerHTML = "";
-	searchInput.value = '';
+  gallery.innerHTML = "";
+  searchInput.value = '';
+}
+
+async function uploadMorePhoto(){
+  page++;
+  if(currentSearch){
+    fetchLink = `https://api.pexels.com/v1/search?query=${currentSearch}+query&per_page=10&page=${page}`;
+  }else{
+    fetchLink= `https://api.pexels.com/v1/curated?per_page=15&page=${page}`;
+  }
+const data = await fetchApi(fetchLink);
+generatePicture(data);
 }
 
 curatedPhotos();
